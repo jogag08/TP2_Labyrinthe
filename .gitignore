@@ -1,0 +1,10 @@
+build
+Deployment/**
+!Deployment/31.bmp
+!Deployment/64.bmp
+!Deployment/128.bmp
+!Deployment/512.bmp
+!Deployment/45565.bmp
+!Deployment/braid2k.png
+!Deployment/combo400.png
+!Deployment/perfect2k.png
