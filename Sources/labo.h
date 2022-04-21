@@ -1,6 +1,8 @@
 ﻿#include <stdint.h>
 #include <assert.h>
 
+
+
 void* allocate(size_t size);
 
 typedef struct {
@@ -24,29 +26,6 @@ typedef struct QNode {
 void queue_init(Queue* q);
 void queue_push(Queue* q, void* data);
 void* queue_pop(Queue* q);
-
-/*
-* Programmer l'algorithme de fibonacci.
-* Faire attention lorsque vous utilisez un type pour une variable qui représente un nombre, int ne dépasse pas 2^31-1 ou 2,147,483,647
-*/
-long long fibonacci(int n);
-
-/*
-* Programmer l'algorithme de fibonacci avec la memoization en utilisant une variable static fib_cache, implémenter dans la fonction. Son type sera long long [].
-* Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
-* Faire attention lorsque vous utilisez un type pour une variable qui représente un nombre, int ne dépasse pas 2^31-1 ou 2,147,483,647
-*/
-long long fibonacci_memoization(int n);
-
-/*
-* Programmer l'algorithme de fibonacci avec la memoization en utilisant une variable static fib_cache, implémenter dans la fonction. Son type sera long long**.
-* Allouer de la memoire pour fib_cache en utilisant allocate. Après avoir trouver un resultat, pour le mettre dans fib_cache, allouer un int* avec malloc puis ajouter le a fib_cache.
-* Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
-* Faire attention lorsque vous utilisez un type pour une variable qui représente un nombre, int ne dépasse pas 2^31-1 ou 2,147,483,647.
-*/
-long long fibonacci_memoization_malloc(int n);
-
-
 
 typedef struct {
 	double x;
@@ -89,7 +68,7 @@ void add_edge(AdjMatrix* graph, int fromNode, int toNode, uint8_t cost);
 * Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
 */
 
-//void build_groups(AdjMatrix* graph);
+void build_groups(AdjMatrix* graph);
 
 /*
 * Aller chercher votre implémentation d'astar. Faire des test de profiling avec votre implémentation. 
@@ -98,4 +77,6 @@ void add_edge(AdjMatrix* graph, int fromNode, int toNode, uint8_t cost);
 * Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
 */
 
-//void astar(AdjMatrix* graph,int startNodeIndex, int endNodeIndex, Stack* solvedPath);
+void astar(AdjMatrix* graph,int startNodeIndex, int endNodeIndex, Stack* solvedPath);
+
+double DistanceNodes(Node* fromNode, Node* toNode);

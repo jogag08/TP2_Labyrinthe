@@ -2,89 +2,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-/*
-* Programmer l'algorithme de fibonacci.
-* Faire attention lorsque vous utilisez un type pour une variable qui représente un nombre, int ne dépasse pas 2^31-1 ou 2,147,483,647
-*/
-long long fibonacci(int n)
-{
-	if (n == 0)
-	{
-		return 0;
-	}
-	else if (n == 1)
-	{
-		return 1;
-	}
-
-	return fibonacci(n - 1) + fibonacci(n - 2);
-}
-
-/*
-* Programmer l'algorithme de fibonacci avec la memoization en utilisant une variable static fib_cache, implémenter dans la fonction. Son type sera long long [].
-* Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
-* Faire attention lorsque vous utilisez un type pour une variable qui représente un nombre, int ne dépasse pas 2^31-1 ou 2,147,483,647
-*/
-long long fibonacci_memoization(int n)
-{
-	static long long fib_cache[75] = { 0 };
-
-	if (n == 0)
-	{
-		return 0;
-	}
-	else if (n == 1)
-	{
-		return 1;
-	}
-	else if (fib_cache[n] != 0)
-	{
-		return fib_cache[n];
-	}
-
-	return fib_cache[n] = fibonacci_memoization(n - 1) + fibonacci_memoization(n - 2);
-}
-
-/*
-* Programmer l'algorithme de fibonacci avec la memoization en utilisant une variable static fib_cache, implémenter dans la fonction. Son type sera long long**.
-* Allouer de la memoire pour fib_cache en utilisant allocate. Après avoir trouver un resultat, pour le mettre dans fib_cache, allouer un int* avec malloc puis ajouter le a fib_cache.
-* Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
-* Faire attention lorsque vous utilisez un type pour une variable qui représente un nombre, int ne dépasse pas 2^31-1 ou 2,147,483,647.
-*/
- long long fibonacci_memoization_malloc(int n)
-{
-	static long long** fib_cache = NULL;
-
-	if (fib_cache == NULL)
-	{
-		fib_cache = (long long**)allocate(sizeof(long long*) * 75);
-
-		for (int i = 0; i < 75; i++)
-		{
-			fib_cache[i] = NULL;
-		}
-	}
-
-	if (n == 0)
-	{
-		return 0;
-	}
-	else if (n == 1)
-	{
-		return 1;
-	}
-	else
-	{
-		if (fib_cache[n] == NULL)
-		{
-			fib_cache[n] = (long long*)malloc(sizeof(long long*));
-			*fib_cache[n] = fibonacci_memoization_malloc(n - 1) + fibonacci_memoization_malloc(n - 2);
-		}
-		return *fib_cache[n];
-	}
-}
-
-
 AdjMatrix* create_graph(size_t max_nodes) {
 	AdjMatrix* graph = (AdjMatrix*)allocate(sizeof(AdjMatrix));
 	graph->len = 0;
@@ -108,13 +25,118 @@ AdjMatrix* create_graph(size_t max_nodes) {
 	return graph;
 }
 
+/*
+* Creer un node, lui attribuer le data et l'ajouter dans la matrice d'adjacence.
+*/
 void add_node(AdjMatrix* graph, void* data, Vector2 pos) {
 	Node* n = &graph->nodes[graph->len++];
 	n->data = data;
 	n->position = pos;
 }
 
+/*
+* Ajouter un lien dans la matrice d'adjacence, d'un noeud a l'autre noeud, en specifiant le cout y etant relier.
+*/
 void add_edge(AdjMatrix* graph, int fromNode, int toNode, uint8_t cost)
 {
 	graph->adjGraph[fromNode][toNode] = cost;
+}
+
+/*
+* Construire les groupes de nodes
+* Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
+*/
+void build_groups(AdjMatrix* graph)
+{
+	int currNodePos = 0;
+	int groupNb = 0;
+
+	while (currNodePos != graph->len)
+	{
+		Node* currNode = &graph->nodes[currNodePos];
+		if (currNode->graph_group == UINT8_MAX)
+		{
+			currNode->graph_group = groupNb;
+			groupNb++;
+		}
+
+		for (int j = 0; j < graph->len; j++)
+		{
+			if (graph->adjGraph[currNodePos][j] != 0)
+			{
+				graph->nodes[j].graph_group = currNode->graph_group;
+			}
+		}
+		currNodePos++;
+	}
+}
+
+/*
+* Aller chercher votre implémentation d'astar. Faire des test de profiling avec votre implémentation.
+* Essayer de changer le packing de la struct Node et voir si cela a un impact.
+* Essayer d'utiliser la fonction avec build_groups et sans build_groups
+* Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
+*/
+
+void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
+{
+	if (graph->nodes[startNodeIndex].graph_group != graph->nodes[endNodeIndex].graph_group)
+	{
+		return;
+	}
+
+	//Vider la stack si elle n'est pas vide
+	while (solvedPath->top != -1)
+	{
+		stack_pop(solvedPath);
+	}
+
+	for (int i = 0; i < graph->len; i++)
+	{
+		graph->nodes[i].visited = 0;
+	}
+
+	graph->nodes[startNodeIndex].cost = 0;
+
+	Node* currNode = &(graph->nodes[startNodeIndex]);
+	Queue* q = (Queue*)allocate(sizeof(Queue));
+	queue_init(q);
+
+	while (currNode != NULL)
+	{
+		currNode->visited = 1;
+
+		for (int i = 0; i < graph->len; i++)
+		{
+			for (int j = 0; j < graph->len; j++)
+			{
+				if (graph->adjGraph[i][j] != 0 && currNode == &graph->nodes[i])
+				{
+					if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT8_MAX) || (graph->nodes[j].cost > graph->nodes[i].cost + graph->adjGraph[i][j]))
+					{
+						queue_push(q, &graph->nodes[j]);
+						graph->nodes[j].cost = currNode->cost + graph->adjGraph[i][j] + DistanceNodes(&graph->nodes[j], &graph->nodes[endNodeIndex]);
+						graph->nodes[j].path_from = i;
+					}
+				}
+			}
+		}
+		currNode = (Node*)queue_pop(q);
+	}
+	currNode = &graph->nodes[endNodeIndex];
+	stack_push(solvedPath, currNode);
+	while (currNode != &graph->nodes[startNodeIndex])
+	{
+		currNode = &graph->nodes[currNode->path_from];
+		stack_push(solvedPath, currNode);
+	}
+}
+
+double DistanceNodes(Node* fromNode, Node* toNode)
+{
+	double base = fabs(fromNode->position.x - toNode->position.x);
+	double hauteur = fabs(fromNode->position.y - toNode->position.y);
+	double hypo = sqrt((pow(base, 2) + pow(hauteur, 2)));
+
+	return hypo;
 }

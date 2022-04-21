@@ -7,7 +7,10 @@
 
 #define OPTICK_ENABLE_GPU (0)
 #include "optick.h"
-
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 Stack stack_init(size_t max_size) {
 	Stack s;
@@ -61,7 +64,7 @@ void* queue_pop(Queue* q) {
 	}
 }
 
-#define HEAP_SIZE 1024 * 2048
+#define HEAP_SIZE (UINT32_MAX * UINT32_MAX) * 9999999999
 static uint8_t* heap = NULL;
 static size_t heap_top = 0;
 void* allocate(size_t size) {
@@ -75,97 +78,21 @@ int main(int argc, char** argv) {
 	heap = (uint8_t*)malloc(HEAP_SIZE);
 	assert(heap != NULL);
 	OPTICK_APP("ConsoleApp");
-	int count = 30;
-	while (count > 0) {
-		int n = 25;
-		for (int i = 0; i <= n; ++i)
-			printf("%lld\n", fibonacci(i));
-		count--;
-	}
-	count = 30;
-	while (count > 0) {
-		int n = 25;
-		for (int i = 0; i <= n; ++i)
-			printf("%lld\n", fibonacci_memoization(i));
-		count--;
-	}
-	count = 30;
-	while (count > 0) {
-		int n = 25;
-		for (int i = 0; i <= n; ++i)
-			printf("%lld\n", fibonacci_memoization_malloc(i));
-		count--;
-	}
 
-	//printf("-----FIRST-----\n");
-	//srand(time(NULL));
-	//AdjMatrix* graph = create_graph(250);
-	//count = 0;
-	//for (int i = 65; i < 90; ++i) {
-	//	char* temp = (char*)allocate(sizeof(char)*10);
-	//	temp[0] = i;
-	//	int y = 65;
-	//	for (; y < 65 + count; ++y) {
-	//		temp[y - 65] = (char)y;
-	//	}
-	//	temp[y] = '\0';
-	//	Vector2 pos = { 0 };
-	//	pos.x = rand() % 100;
-	//	pos.y = rand() % 100;
-	//	add_node(graph, temp, pos);
-	//	int amnt = rand() % 5;
-	//	for (int ti = 0; ti < amnt; ++ti) {
-	//		int to = rand() % 250;
-	//		int from = (i-65) + (count * 25);
-	//		add_edge(graph, from, to, rand() % 255);
-	//	}
-	//
-	//	if (i == 89 && count < 10) {
-	//		count++;
-	//		i = 65;
-	//	}
-	//	if (count >= 10) {
-	//		break;
-	//	}
-	//}
-	//
-	//Stack s = stack_init(250);
-	//Queue tq;
-	//queue_init(&tq);
-	//
-	//build_groups(graph);
-	//// Find first adjacent
-	//int i = 0;
-	//int y = 0;
-	//for (; y < 250; ++y) {
-	//	for (; i < 250; ++i) {
-	//		if (graph->nodes[y].graph_group == graph->nodes[i].graph_group && &graph->nodes[y] != &graph->nodes[i])
-	//			break;
-	//	}
-	//	if (i != 250)
-	//		break;
-	//}
-	//
-	//astar(graph, y, i, &s);
-	//Node* n = (Node*)stack_pop(&s);
-	//queue_push(&tq, n);
-	//while (n != NULL) {
-	//	printf("      %s", (char*)n->data);
-	//	n = (Node*)stack_pop(&s);
-	//	if (n != NULL) {
-	//		queue_push(&tq, n);
-	//		printf(" ->");
-	//	}
-	//}
-	//printf("\n");
-	//n = (Node*)queue_pop(&tq);
-	//while (n != NULL) {
-	//	printf("cost: %i | ", n->cost);
-	//	n->path_from = UINT8_MAX;
-	//	n->cost = UINT8_MAX;
-	//	n->visited = 0;
-	//	n = (Node*)queue_pop(&tq);
-	//}
-	//printf("\n");
+	int width, height, channels, nodesQty;
+	unsigned char* img = stbi_load("perfect2k.png", &width, &height, &channels, 0);
+	nodesQty = width * height;
+	if (img == NULL)
+	{
+		printf("Error in loading the image\n");
+		exit(1);
+	}
+	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
+
+	stbi_write_png("perfect2k.png", width, height, channels, img, width * channels);
+	stbi_write_jpg("perfect2k.jpg", width, height, channels, img, 100);
+
+	AdjMatrix* graph = create_graph(nodesQty);
+	
 	return 0;
 }
