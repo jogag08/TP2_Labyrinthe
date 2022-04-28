@@ -28,8 +28,8 @@ void queue_push(Queue* q, void* data);
 void* queue_pop(Queue* q);
 
 typedef struct {
-	double x;
-	double y;
+	int x;
+	int y;
 } Vector2;
 
 typedef struct {

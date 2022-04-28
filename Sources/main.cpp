@@ -79,20 +79,55 @@ int main(int argc, char** argv) {
 	assert(heap != NULL);
 	OPTICK_APP("ConsoleApp");
 
-	int width, height, channels, nodesQty;
-	unsigned char* img = stbi_load("perfect2k.png", &width, &height, &channels, 0);
+	int width, height, channels, nodesQty, imgSize, whitePixelsQty = 0, blackPixelsQty =0;
+	unsigned char* img = stbi_load("31.bmp", &width, &height, &channels, 0);
 	nodesQty = width * height;
+	imgSize = nodesQty * channels;
+	
+
 	if (img == NULL)
 	{
 		printf("Error in loading the image\n");
 		exit(1);
 	}
+
+	for (unsigned char* i = img; i < img + imgSize; i +=3)
+	{
+		if ((i[0] > 100) && (i[1] > 100) && (i[2] > 100))
+		{
+			//i[0] = 255; //R
+			//i[1] = 0;	//G
+			//i[2] = 0;	//B
+			whitePixelsQty++;
+		}
+
+		//if ((i[0] < 100) && (i[1] < 100) && (i[2] < 100))
+		//{
+		//	i[0] = 0;	//R
+		//	i[1] = 255;	//G
+		//	i[2] = 0;	//B
+		//	blackPixelsQty++;
+		//}
+	}
+
+	AdjMatrix* graph = create_graph(whitePixelsQty);
+	Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
+	int index = -1;
+
+	for (unsigned char* i = img; i < img + imgSize; i += 3)
+	{
+		index++;
+		if ((i[0] > 100) && (i[1] > 100) && (i[2] > 100))
+		{
+			pos->x = index % width;
+			pos->y = index / width;
+			add_node(graph, i, *pos);
+		}
+	}
+
 	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
-
-	stbi_write_png("perfect2k.png", width, height, channels, img, width * channels);
-	stbi_write_jpg("perfect2k.jpg", width, height, channels, img, 100);
-
-	AdjMatrix* graph = create_graph(nodesQty);
+	
+	stbi_write_bmp("new31.bmp", width, height, channels, img);
 	
 	return 0;
 }
