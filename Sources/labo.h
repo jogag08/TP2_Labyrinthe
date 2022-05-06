@@ -37,7 +37,10 @@ typedef struct {
 	Vector2 position;
 	uint8_t graph_group;
 	void* data;
-	uint8_t path_from;
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	uint64_t path_from;
 	uint8_t visited;
 } Node;
 typedef struct AdjMatrix AdjMatrix;

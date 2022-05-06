@@ -125,6 +125,29 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	for (unsigned int i = 0; i < graph->len; i++)
+	{
+		for (unsigned int j = 0; j < graph->len; j++)
+		{
+			if ((graph->nodes[j].position.x == (graph->nodes[i].position.x) - 1) ||
+				(graph->nodes[j].position.y == (graph->nodes[i].position.y) - 1))
+			{
+				add_edge(graph, i, j, 1);
+			}
+		}
+		
+	}
+
+
+
+
+
+	for (int i = 0; i < graph->len; i++)
+	{
+		graph->nodes[i].g = 0;
+		graph->nodes[i].b = 0;
+	}
+
 	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 	
 	stbi_write_bmp("new31.bmp", width, height, channels, img);
