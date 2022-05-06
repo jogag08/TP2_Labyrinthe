@@ -13,7 +13,7 @@ AdjMatrix* create_graph(size_t max_nodes) {
 		n->graph_group = UINT8_MAX;
 		n->visited = 0;
 		n->data = "NONE";
-		n->path_from = UINT8_MAX;
+		n->path_from = UINT64_MAX;
 	}
 	graph->adjGraph = (int**)allocate(sizeof(int*) * max_nodes);
 	for (int i = 0; i < max_nodes; ++i) {
@@ -80,10 +80,10 @@ void build_groups(AdjMatrix* graph)
 
 void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
 {
-	if (graph->nodes[startNodeIndex].graph_group != graph->nodes[endNodeIndex].graph_group)
-	{
-		return;
-	}
+	//if (graph->nodes[startNodeIndex].graph_group != graph->nodes[endNodeIndex].graph_group)
+	//{
+	//	return;
+	//}
 
 	//Vider la stack si elle n'est pas vide
 	while (solvedPath->top != -1)
@@ -112,7 +112,7 @@ void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solved
 			{
 				if (graph->adjGraph[i][j] != 0 && currNode == &graph->nodes[i])
 				{
-					if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT8_MAX) || (graph->nodes[j].cost > graph->nodes[i].cost + graph->adjGraph[i][j]))
+					if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT64_MAX) || (graph->nodes[j].cost > graph->nodes[i].cost + graph->adjGraph[i][j]))
 					{
 						queue_push(q, &graph->nodes[j]);
 						graph->nodes[j].cost = currNode->cost + graph->adjGraph[i][j] + DistanceNodes(&graph->nodes[j], &graph->nodes[endNodeIndex]);
@@ -139,4 +139,14 @@ double DistanceNodes(Node* fromNode, Node* toNode)
 	double hypo = sqrt((pow(base, 2) + pow(hauteur, 2)));
 
 	return hypo;
+}
+
+void MakePathRed(Stack* s)
+{
+	while (s->top != 0)
+	{
+		Node* newNode = (Node*)stack_pop(s);
+		newNode->g = 0;
+		newNode->b = 0;
+	}
 }

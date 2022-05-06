@@ -54,7 +54,8 @@ void queue_push(Queue* q, void* data) {
 	}
 }
 void* queue_pop(Queue* q) {
-	if (q->prev != NULL) {
+	if (q->prev != NULL) 
+	{
 		QNode* temp = q->prev;
 		if(temp->prev != NULL)
 			temp->prev->next = NULL;
@@ -62,7 +63,9 @@ void* queue_pop(Queue* q) {
 		q->count++;
 		return temp->data;
 	}
+	return NULL;
 }
+
 
 #define HEAP_SIZE (UINT32_MAX * UINT32_MAX) * 9999999999
 static uint8_t* heap = NULL;
@@ -113,40 +116,50 @@ int main(int argc, char** argv) {
 	AdjMatrix* graph = create_graph(whitePixelsQty);
 	Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
 	int index = -1;
+	int k = 0;
 
 	for (unsigned char* i = img; i < img + imgSize; i += 3)
 	{
 		index++;
-		if ((i[0] > 100) && (i[1] > 100) && (i[2] > 100))
+		printf("Position:%d  ", k);
+		k++;
+		if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))
 		{
 			pos->x = index % width;
 			pos->y = index / width;
 			add_node(graph, i, *pos);
+			printf("%d\n", index);
 		}
 	}
-
-	for (unsigned int i = 0; i < graph->len; i++)
+	int node = 0;
+	for (unsigned int i = 0; i < whitePixelsQty; i++)
 	{
-		for (unsigned int j = 0; j < graph->len; j++)
+		for (unsigned int j = 0; j < whitePixelsQty; j++)
 		{
-			if ((graph->nodes[j].position.x == (graph->nodes[i].position.x) - 1) ||
-				(graph->nodes[j].position.y == (graph->nodes[i].position.y) - 1))
+			int x1 = graph->nodes[i].position.x;
+			int y1 = graph->nodes[i].position.y;
+			int x2 = graph->nodes[j].position.x;
+			int y2 = graph->nodes[j].position.y;
+
+			if (((x2 - x1 == 1) && (y1 == y2)) || ((x1 == x2) && (y2 - y1 == 1))) 
 			{
+				printf("Node %d", node);
+				node++;
 				add_edge(graph, i, j, 1);
+				printf("Node%d :: x1 :%d    y1 :%d    x2 :%d    y2 :%d\n",i, x1, y1, x2, y2);
 			}
 		}
-		
 	}
+	
+	Stack newStack = stack_init(graph->len);
+	//astar(graph, 0, graph->len, &newStack);
+	//MakePathRed(&newStack);
 
-
-
-
-
-	for (int i = 0; i < graph->len; i++)
-	{
-		graph->nodes[i].g = 0;
-		graph->nodes[i].b = 0;
-	}
+	//for (int i = 0; i < graph->len; i++)
+	//{
+	//	graph->nodes[i].g = 0;
+	//	graph->nodes[i].b = 0;
+	//}
 
 	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 	

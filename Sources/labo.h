@@ -33,7 +33,7 @@ typedef struct {
 } Vector2;
 
 typedef struct {
-	uint8_t cost;
+	uint64_t cost;
 	Vector2 position;
 	uint8_t graph_group;
 	void* data;
@@ -83,3 +83,4 @@ void build_groups(AdjMatrix* graph);
 void astar(AdjMatrix* graph,int startNodeIndex, int endNodeIndex, Stack* solvedPath);
 
 double DistanceNodes(Node* fromNode, Node* toNode);
+void MakePathRed(Stack* s);
