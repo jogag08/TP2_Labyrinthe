@@ -67,7 +67,7 @@ void* queue_pop(Queue* q) {
 }
 
 
-#define HEAP_SIZE (UINT32_MAX * UINT32_MAX) * 9999999999
+#define HEAP_SIZE (UINT64_MAX * UINT64_MAX) * 9999999999
 static uint8_t* heap = NULL;
 static size_t heap_top = 0;
 void* allocate(size_t size) {
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 	OPTICK_APP("ConsoleApp");
 
 	int width, height, channels, nodesQty, imgSize, whitePixelsQty = 0, blackPixelsQty =0;
-	unsigned char* img = stbi_load("31.bmp", &width, &height, &channels, 0);
+	unsigned char* img = stbi_load("128.bmp", &width, &height, &channels, 0);
 	nodesQty = width * height;
 	imgSize = nodesQty * channels;
 	
@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
 
 	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 	
-	stbi_write_bmp("new31.bmp", width, height, channels, img);
+	stbi_write_bmp("new128.bmp", width, height, channels, img);
 	
 	return 0;
 }

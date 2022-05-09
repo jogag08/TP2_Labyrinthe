@@ -85,3 +85,27 @@ void astar(AdjMatrix* graph,int startNodeIndex, int endNodeIndex, Stack* solvedP
 
 double DistanceNodes(Node* fromNode, Node* toNode);
 void MakePathRed(Stack* s);
+
+
+
+//Avec liste adjacence
+
+//typedef struct NodeL{
+//	void* data; //
+//	NodeL* adj[UINT8_MAX];
+//	uint8_t len;
+//	uint8_t visited;
+//	QNode revPath;
+//	
+//	//uint64_t cost;
+//	//Vector2 position;
+//	//uint8_t graph_group;
+//	//unsigned char r;
+//	//unsigned char g;
+//	//unsigned char b;
+//	//uint64_t path_from;
+//	//uint64_t index;
+//	//uint8_t visited;
+//} NodeL;
+
+//NodeL* create_node(void* data);

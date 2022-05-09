@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <string.h>
 AdjMatrix* create_graph(size_t max_nodes) {
 	AdjMatrix* graph = (AdjMatrix*)allocate(sizeof(AdjMatrix));
 	graph->len = 0;
@@ -114,16 +114,16 @@ void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solved
 	{
 		currNode->visited = 1;
 
-		for (int i = 0; i < graph->len; i++)
+		//for (int i = 0; i < graph->len; i++)
 		{
 			for (int j = 0; j < graph->len; j++)
 			{
-				if (graph->adjGraph[i][j] != 0 && currNode == &graph->nodes[i])
+				if (graph->adjGraph[currNode->index][j] != 0 && currNode == &graph->nodes[currNode->index])
 				{
-					if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT64_MAX)  || (graph->nodes[j].cost > graph->nodes[i].cost + graph->adjGraph[i][j]))
+					if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT64_MAX)  || (graph->nodes[j].cost > graph->nodes[currNode->index].cost + graph->adjGraph[currNode->index][j]))
 					{
-						graph->nodes[j].cost = currNode->cost + graph->adjGraph[i][j] + DistanceNodes(&graph->nodes[j], &graph->nodes[endNodeIndex - 1]);
-						graph->nodes[j].path_from = graph->nodes[i].index;
+						graph->nodes[j].cost = currNode->cost + graph->adjGraph[currNode->index][j] + DistanceNodes(&graph->nodes[j], &graph->nodes[endNodeIndex - 1]);
+						graph->nodes[j].path_from = graph->nodes[currNode->index].index;
 						queue_push(q, &graph->nodes[j]);
 					}
 				}
@@ -160,3 +160,16 @@ void MakePathRed(Stack* s)
 		newPixel[2] = 0;
 	}
 }
+
+
+
+//Liste adjacence
+
+//struct Node*
+//
+//Node* create_node(void* data)
+//{
+//	Node* newNode = (Node*)allocate(sizeof(Node));
+//	newNode->data = data;
+//	memset(newNode->adj);
+//}
