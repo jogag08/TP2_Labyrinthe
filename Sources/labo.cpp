@@ -1,6 +1,7 @@
 #include "labo.h"
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 AdjMatrix* create_graph(size_t max_nodes) {
 	AdjMatrix* graph = (AdjMatrix*)allocate(sizeof(AdjMatrix));
@@ -9,11 +10,12 @@ AdjMatrix* create_graph(size_t max_nodes) {
 	graph->nodes = (Node*)allocate(sizeof(Node) * max_nodes);
 	for (int i = 0; i < max_nodes; ++i) {
 		Node* n = &graph->nodes[i];
-		n->cost = UINT8_MAX;
+		n->cost = UINT64_MAX;
 		n->graph_group = UINT8_MAX;
 		n->visited = 0;
 		n->data = "NONE";
 		n->path_from = UINT64_MAX;
+		n->index = NULL;
 	}
 	graph->adjGraph = (int**)allocate(sizeof(int*) * max_nodes);
 	for (int i = 0; i < max_nodes; ++i) {
@@ -28,10 +30,11 @@ AdjMatrix* create_graph(size_t max_nodes) {
 /*
 * Creer un node, lui attribuer le data et l'ajouter dans la matrice d'adjacence.
 */
-void add_node(AdjMatrix* graph, void* data, Vector2 pos) {
+void add_node(AdjMatrix* graph, void* data, Vector2 pos, uint64_t idx) {
 	Node* n = &graph->nodes[graph->len++];
 	n->data = data;
 	n->position = pos;
+	n->index = idx;
 }
 
 /*
@@ -102,6 +105,11 @@ void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solved
 	Queue* q = (Queue*)allocate(sizeof(Queue));
 	queue_init(q);
 
+	for (int i = 0; i < graph->len; i++)
+	{
+		printf("%d", graph->nodes[i].index);
+	}
+
 	while (currNode != NULL)
 	{
 		currNode->visited = 1;
@@ -112,18 +120,18 @@ void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solved
 			{
 				if (graph->adjGraph[i][j] != 0 && currNode == &graph->nodes[i])
 				{
-					if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT64_MAX) || (graph->nodes[j].cost > graph->nodes[i].cost + graph->adjGraph[i][j]))
+					if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT64_MAX)  || (graph->nodes[j].cost > graph->nodes[i].cost + graph->adjGraph[i][j]))
 					{
+						graph->nodes[j].cost = currNode->cost + graph->adjGraph[i][j] + DistanceNodes(&graph->nodes[j], &graph->nodes[endNodeIndex - 1]);
+						graph->nodes[j].path_from = graph->nodes[i].index;
 						queue_push(q, &graph->nodes[j]);
-						graph->nodes[j].cost = currNode->cost + graph->adjGraph[i][j] + DistanceNodes(&graph->nodes[j], &graph->nodes[endNodeIndex]);
-						graph->nodes[j].path_from = i;
 					}
 				}
 			}
 		}
 		currNode = (Node*)queue_pop(q);
 	}
-	currNode = &graph->nodes[endNodeIndex];
+	currNode = &graph->nodes[endNodeIndex - 1];
 	stack_push(solvedPath, currNode);
 	while (currNode != &graph->nodes[startNodeIndex])
 	{
@@ -143,10 +151,12 @@ double DistanceNodes(Node* fromNode, Node* toNode)
 
 void MakePathRed(Stack* s)
 {
-	while (s->top != 0)
+	while (s->top != -1)
 	{
 		Node* newNode = (Node*)stack_pop(s);
-		newNode->g = 0;
-		newNode->b = 0;
+		unsigned char* newPixel = (unsigned char*)newNode->data;
+		newPixel[0] = 255;
+		newPixel[1] = 0;
+		newPixel[2] = 0;
 	}
 }

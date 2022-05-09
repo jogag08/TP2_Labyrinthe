@@ -41,6 +41,7 @@ typedef struct {
 	unsigned char g;
 	unsigned char b;
 	uint64_t path_from;
+	uint64_t index;
 	uint8_t visited;
 } Node;
 typedef struct AdjMatrix AdjMatrix;
@@ -58,7 +59,7 @@ AdjMatrix* create_graph(size_t max_nodes);
 /*
 * Creer un node, lui attribuer le data et l'ajouter dans la matrice d'adjacence.
 */
-void add_node(AdjMatrix* graph, void* data, Vector2 pos);
+void add_node(AdjMatrix* graph, void* data, Vector2 pos, uint64_t idx);
 
 /*
 * Ajouter un lien dans la matrice d'adjacence, d'un noeud a l'autre noeud, en specifiant le cout y etant relier.

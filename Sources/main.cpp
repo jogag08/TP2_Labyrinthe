@@ -98,68 +98,53 @@ int main(int argc, char** argv) {
 	{
 		if ((i[0] > 100) && (i[1] > 100) && (i[2] > 100))
 		{
-			//i[0] = 255; //R
-			//i[1] = 0;	//G
-			//i[2] = 0;	//B
 			whitePixelsQty++;
 		}
-
-		//if ((i[0] < 100) && (i[1] < 100) && (i[2] < 100))
-		//{
-		//	i[0] = 0;	//R
-		//	i[1] = 255;	//G
-		//	i[2] = 0;	//B
-		//	blackPixelsQty++;
-		//}
 	}
 
 	AdjMatrix* graph = create_graph(whitePixelsQty);
 	Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
-	int index = -1;
+	uint64_t index = 0;
 	int k = 0;
 
 	for (unsigned char* i = img; i < img + imgSize; i += 3)
 	{
-		index++;
-		printf("Position:%d  ", k);
-		k++;
-		if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))
+		if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))	
 		{
-			pos->x = index % width;
-			pos->y = index / width;
-			add_node(graph, i, *pos);
-			printf("%d\n", index);
+			pos->x = k % width;
+			pos->y = k / width;
+			add_node(graph, i, *pos, index);
+			index++;
 		}
+		k++;
 	}
 	int node = 0;
-	for (unsigned int i = 0; i < whitePixelsQty; i++)
+	for (unsigned int i = 0; i <= graph->len; i++)
 	{
-		for (unsigned int j = 0; j < whitePixelsQty; j++)
+		for (unsigned int j = 0; j <= graph->len; j++)
 		{
 			int x1 = graph->nodes[i].position.x;
 			int y1 = graph->nodes[i].position.y;
 			int x2 = graph->nodes[j].position.x;
 			int y2 = graph->nodes[j].position.y;
 
-			if (((x2 - x1 == 1) && (y1 == y2)) || ((x1 == x2) && (y2 - y1 == 1))) 
+			if 
+			(
+				((x2 - x1 == 1) && (y1 == y2)) ||	//voisin gauche
+				((x1 == x2) && (y2 - y1  == 1)) ||	//voisin bas
+				((x2 - x1 == -1) && (y1 == y2)) ||	//voisin droite
+				((x1 == x2) && (y2 - y1 == -1))		//voisin haut
+			)
 			{
-				printf("Node %d", node);
-				node++;
 				add_edge(graph, i, j, 1);
-				printf("Node%d :: x1 :%d    y1 :%d    x2 :%d    y2 :%d\n",i, x1, y1, x2, y2);
+				printf("NodeIdx : %d  +  %d\n", graph->nodes[i].index, graph->nodes[j].index);
 			}
 		}
 	}
 	
-	Stack newStack = stack_init(graph->len);
-	//astar(graph, 0, graph->len, &newStack);
-	//MakePathRed(&newStack);
-
-	//for (int i = 0; i < graph->len; i++)
-	//{
-	//	graph->nodes[i].g = 0;
-	//	graph->nodes[i].b = 0;
-	//}
+	Stack newStack = stack_init(whitePixelsQty);
+	astar(graph, 0, newStack.max, &newStack);
+	MakePathRed(&newStack);
 
 	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 	
