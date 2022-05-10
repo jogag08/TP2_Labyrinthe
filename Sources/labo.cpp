@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <vector>
 AdjMatrix* create_graph(size_t max_nodes) {
 	AdjMatrix* graph = (AdjMatrix*)allocate(sizeof(AdjMatrix));
 	graph->len = 0;
@@ -81,7 +82,7 @@ void build_groups(AdjMatrix* graph)
 * Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
 */
 
-void astar(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
+void astarAdjMatrix(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
 {
 	//if (graph->nodes[startNodeIndex].graph_group != graph->nodes[endNodeIndex].graph_group)
 	//{
@@ -161,15 +162,110 @@ void MakePathRed(Stack* s)
 	}
 }
 
-
-
 //Liste adjacence
 
-//struct Node*
-//
-//Node* create_node(void* data)
-//{
-//	Node* newNode = (Node*)allocate(sizeof(Node));
-//	newNode->data = data;
-//	memset(newNode->adj);
-//}
+AdjList* create_list(size_t max_nodes)
+{
+	AdjList* list = (AdjList*)allocate(sizeof(AdjList));
+	list->len = 0;
+	list->max_size = 0;
+	list->nodes = (NodeL*)allocate(sizeof(NodeL) * max_nodes);
+	return list;
+}
+
+NodeL* create_node(void* data, int x, int y)
+{
+	NodeL* newNode = (NodeL*)allocate(sizeof(NodeL));
+	newNode->data = data;
+	//Vector2* pos = position;
+	//memset(newNode->adj, 0, sizeof(QNode));
+	newNode->visited = 0;
+	newNode->len = 0;
+	newNode->revPath = 255;
+	newNode->cost = 0;
+	newNode->posX = x;
+	newNode->posY = y;
+	for (int i = 0; i < 4; i++)
+	{
+		newNode->adj[i] = NULL;
+	}
+	return newNode;
+}
+
+void add_adjacent_node(NodeL* root, NodeL* node)
+{
+	root->adj[root->len++] = node;
+	node->adj[node->len++] = root;
+}
+
+double DistanceNodesL(NodeL* fromNode, NodeL* toNode)
+{
+	double base = fabs(fromNode->posX - toNode->posX);
+	double hauteur = fabs(fromNode->posY - toNode->posY);
+	double hypo = sqrt((pow(base, 2) + pow(hauteur, 2)));
+
+	return hypo;
+}
+
+void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
+{
+	//if (graph->nodes[startNodeIndex].graph_group != graph->nodes[endNodeIndex].graph_group)
+	//{
+	//	return;
+	//}
+
+	//Vider la stack si elle n'est pas vide
+	while (solvedPath->top != -1)
+	{
+		stack_pop(solvedPath);
+	}
+
+	for (int i = 0; i < list.size(); i++)
+	{
+		list.at(i)->visited = 0;
+	}
+
+	//graph->nodes[startNodeIndex].cost = 0;
+	list.at(0)->cost = 0;
+
+	NodeL *currNode = list.at(0);
+	Queue* q = (Queue*)allocate(sizeof(Queue));
+	queue_init(q);
+
+	//for (int i = 0; i < list.size(); i++)
+	//{
+	//	printf("%d", graph->nodes[i].index);
+	//}
+
+	while (currNode != NULL)
+	{
+		currNode->visited = 1;
+
+		//for (int i = 0; i < graph->len; i++)
+		{
+			for (int i = 0; i < list.size(); i++)
+			{
+				for (int j = 0; j < 4; i++)
+				{
+					if (list.at(i)->adj[j] != 0 && currNode == list.at(i))// &graph->nodes[currNode->index])
+					{
+						if ((list.at(i)->adj[j]->visited != 1 && list.at(i)->adj[j]->cost == UINT64_MAX) || (list.at(j)->cost > list.at(i)->cost + list.at(i)->adj[j]->cost))
+						{
+							list.at(i)->adj[j]->cost = currNode->cost + list.at(i)->adj[j]->cost + DistanceNodesL(list.at(i), list.back() - 1);
+							list.at(i)->adj[j]->revPath = list.at(i)->index;
+							queue_push(q, list.at(i)->adj[j]);
+						}
+					}
+				}
+			}
+		}
+		currNode = (NodeL*)queue_pop(q);
+	}
+	currNode = list.back() - 1;
+	stack_push(solvedPath, currNode);
+	while (currNode != list.at(0))
+	{
+		currNode = currNode->revPath;
+		stack_push(solvedPath, currNode);
+	}
+}

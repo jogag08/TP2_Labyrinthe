@@ -1,8 +1,6 @@
 ﻿#include <stdint.h>
 #include <assert.h>
 
-
-
 void* allocate(size_t size);
 
 typedef struct {
@@ -44,8 +42,8 @@ typedef struct {
 	uint64_t index;
 	uint8_t visited;
 } Node;
-typedef struct AdjMatrix AdjMatrix;
 
+typedef struct AdjMatrix AdjMatrix;
 struct AdjMatrix {
 	int** adjGraph;// Essentiellement: int[][]
 	Node* nodes;
@@ -81,7 +79,7 @@ void build_groups(AdjMatrix* graph);
 * Utiliser OPTICK_EVENT(); pour enregistrer la fonction dans le profiler
 */
 
-void astar(AdjMatrix* graph,int startNodeIndex, int endNodeIndex, Stack* solvedPath);
+void astarAdjMatrix(AdjMatrix* graph,int startNodeIndex, int endNodeIndex, Stack* solvedPath);
 
 double DistanceNodes(Node* fromNode, Node* toNode);
 void MakePathRed(Stack* s);
@@ -90,13 +88,22 @@ void MakePathRed(Stack* s);
 
 //Avec liste adjacence
 
-//typedef struct NodeL{
-//	void* data; //
-//	NodeL* adj[UINT8_MAX];
-//	uint8_t len;
-//	uint8_t visited;
-//	QNode revPath;
-//	
+struct NodeL{
+	void* data;
+	int index;
+	int r;
+	int g;
+	int b;
+	//Vector2 pos;
+	int posX;
+	int posY;
+	NodeL* adj[4];
+	uint8_t adjCount;
+	uint64_t len;
+	uint64_t cost;
+	uint8_t visited;
+	int revPath;
+
 //	//uint64_t cost;
 //	//Vector2 position;
 //	//uint8_t graph_group;
@@ -106,6 +113,21 @@ void MakePathRed(Stack* s);
 //	//uint64_t path_from;
 //	//uint64_t index;
 //	//uint8_t visited;
-//} NodeL;
+};
 
-//NodeL* create_node(void* data);
+typedef struct AdjList AdjList;
+struct AdjList {
+	NodeL* nodes;
+	size_t len;
+	size_t max_size;
+};
+
+AdjList* create_list(size_t max_nodes);
+
+NodeL* create_node(void* data, int x, int y);
+
+void add_adjacent_node(NodeL* root, NodeL* node);
+
+void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath);
+
+double DistanceNodesL(NodeL* fromNode, NodeL* toNode);

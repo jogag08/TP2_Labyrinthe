@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <vector>
 
 #include "labo.h"
 
@@ -83,7 +84,7 @@ int main(int argc, char** argv) {
 	OPTICK_APP("ConsoleApp");
 
 	int width, height, channels, nodesQty, imgSize, whitePixelsQty = 0, blackPixelsQty =0;
-	unsigned char* img = stbi_load("128.bmp", &width, &height, &channels, 0);
+	unsigned char* img = stbi_load("31.bmp", &width, &height, &channels, 0);
 	nodesQty = width * height;
 	imgSize = nodesQty * channels;
 	
@@ -102,53 +103,95 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	AdjMatrix* graph = create_graph(whitePixelsQty);
-	Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
-	uint64_t index = 0;
-	int k = 0;
+	//AdjMatrix* graph = create_graph(whitePixelsQty);
+	//Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
+	//uint64_t index = 0;
+	//int k = 0;
+	//
+	//for (unsigned char* i = img; i < img + imgSize; i += 3)
+	//{
+	//	if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))	
+	//	{
+	//		pos->x = k % width;
+	//		pos->y = k / width;
+	//		add_node(graph, i, *pos, index);
+	//		index++;
+	//	}
+	//	k++;
+	//}
+	//int node = 0;
+	//for (unsigned int i = 0; i <= graph->len; i++)
+	//{
+	//	for (unsigned int j = 0; j <= graph->len; j++)
+	//	{
+	//		int x1 = graph->nodes[i].position.x;
+	//		int y1 = graph->nodes[i].position.y;
+	//		int x2 = graph->nodes[j].position.x;
+	//		int y2 = graph->nodes[j].position.y;
+	//
+	//		if 
+	//		(
+	//			((x2 - x1 == 1) && (y1 == y2)) ||	//voisin gauche
+	//			((x1 == x2) && (y2 - y1  == 1)) ||	//voisin bas
+	//			((x2 - x1 == -1) && (y1 == y2)) ||	//voisin droite
+	//			((x1 == x2) && (y2 - y1 == -1))		//voisin haut
+	//		)
+	//		{
+	//			add_edge(graph, i, j, 1);
+	//			printf("NodeIdx : %d  +  %d\n", graph->nodes[i].index, graph->nodes[j].index);
+	//		}
+	//	}
+	//}
+	//
+	//Stack newStack = stack_init(whitePixelsQty);
+	//astarAdjMatrix(graph, 0, newStack.max, &newStack);
+	//MakePathRed(&newStack);
 
+	//AdjList* list = create_list(whitePixelsQty);
+	std::vector<NodeL*> pixelList;
+	Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
+	int k = 0;
 	for (unsigned char* i = img; i < img + imgSize; i += 3)
 	{
 		if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))	
 		{
 			pos->x = k % width;
 			pos->y = k / width;
-			add_node(graph, i, *pos, index);
-			index++;
+			NodeL* newNode = create_node(i, pos->x, pos->y);
+			pixelList.emplace_back(newNode);
+			//list->len++;
+			//list->nodes[index] = create_node(i, pos);
 		}
 		k++;
 	}
+
 	int node = 0;
-	for (unsigned int i = 0; i <= graph->len; i++)
+	for (unsigned int i = 0; i <= pixelList.size() - 1; i++)
 	{
-		for (unsigned int j = 0; j <= graph->len; j++)
+		for (unsigned int j = 0; j <= pixelList.size() - 1; j++)
 		{
-			int x1 = graph->nodes[i].position.x;
-			int y1 = graph->nodes[i].position.y;
-			int x2 = graph->nodes[j].position.x;
-			int y2 = graph->nodes[j].position.y;
+			int x1 = pixelList.at(i)->posX;
+			int y1 = pixelList.at(i)->posY;
+			int x2 = pixelList.at(j)->posX;
+			int y2 = pixelList.at(j)->posY;
 
 			if 
 			(
-				((x2 - x1 == 1) && (y1 == y2)) ||	//voisin gauche
+				((x2 - x1 == 1) && (y1 == y2))  ||	//voisin gauche
 				((x1 == x2) && (y2 - y1  == 1)) ||	//voisin bas
 				((x2 - x1 == -1) && (y1 == y2)) ||	//voisin droite
 				((x1 == x2) && (y2 - y1 == -1))		//voisin haut
 			)
 			{
-				add_edge(graph, i, j, 1);
-				printf("NodeIdx : %d  +  %d\n", graph->nodes[i].index, graph->nodes[j].index);
+				add_adjacent_node(pixelList.at(i), pixelList.at(j));
+				//printf("NodeIdx : %d  +  %d\n", graph->nodes[i].index, graph->nodes[j].index);
 			}
 		}
 	}
-	
-	Stack newStack = stack_init(whitePixelsQty);
-	astar(graph, 0, newStack.max, &newStack);
-	MakePathRed(&newStack);
 
 	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 	
-	stbi_write_bmp("new128.bmp", width, height, channels, img);
+	stbi_write_bmp("new64.bmp", width, height, channels, img);
 	
 	return 0;
 }
