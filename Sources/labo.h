@@ -1,5 +1,6 @@
 ﻿#include <stdint.h>
 #include <assert.h>
+#include <vector>
 
 void* allocate(size_t size);
 
@@ -99,10 +100,10 @@ struct NodeL{
 	int posY;
 	NodeL* adj[4];
 	uint8_t adjCount;
-	uint64_t len;
+	uint8_t len;
 	uint64_t cost;
 	uint8_t visited;
-	int revPath;
+	uint64_t revPath;
 
 //	//uint64_t cost;
 //	//Vector2 position;
@@ -124,7 +125,7 @@ struct AdjList {
 
 AdjList* create_list(size_t max_nodes);
 
-NodeL* create_node(void* data, int x, int y);
+NodeL* create_node(void* data, int x, int y, int idx);
 
 void add_adjacent_node(NodeL* root, NodeL* node);
 

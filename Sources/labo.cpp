@@ -173,7 +173,7 @@ AdjList* create_list(size_t max_nodes)
 	return list;
 }
 
-NodeL* create_node(void* data, int x, int y)
+NodeL* create_node(void* data, int x, int y, int idx)
 {
 	NodeL* newNode = (NodeL*)allocate(sizeof(NodeL));
 	newNode->data = data;
@@ -181,10 +181,11 @@ NodeL* create_node(void* data, int x, int y)
 	//memset(newNode->adj, 0, sizeof(QNode));
 	newNode->visited = 0;
 	newNode->len = 0;
-	newNode->revPath = 255;
-	newNode->cost = 0;
+	newNode->revPath = UINT64_MAX;
+	newNode->cost = UINT64_MAX;
 	newNode->posX = x;
 	newNode->posY = y;
+	newNode->index = idx;
 	for (int i = 0; i < 4; i++)
 	{
 		newNode->adj[i] = NULL;
@@ -195,7 +196,6 @@ NodeL* create_node(void* data, int x, int y)
 void add_adjacent_node(NodeL* root, NodeL* node)
 {
 	root->adj[root->len++] = node;
-	node->adj[node->len++] = root;
 }
 
 double DistanceNodesL(NodeL* fromNode, NodeL* toNode)
@@ -220,7 +220,7 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 		stack_pop(solvedPath);
 	}
 
-	for (int i = 0; i < list.size(); i++)
+	for (int i = 0; i < list.size() - 1; i++)
 	{
 		list.at(i)->visited = 0;
 	}
@@ -228,7 +228,7 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 	//graph->nodes[startNodeIndex].cost = 0;
 	list.at(0)->cost = 0;
 
-	NodeL *currNode = list.at(0);
+	NodeL* currNode = list.at(0);
 	Queue* q = (Queue*)allocate(sizeof(Queue));
 	queue_init(q);
 
@@ -241,31 +241,46 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 	{
 		currNode->visited = 1;
 
+		int currNodeIdx = currNode->index;
+
 		//for (int i = 0; i < graph->len; i++)
 		{
-			for (int i = 0; i < list.size(); i++)
+			for (int j = 0; j < currNode->len; j++)
 			{
-				for (int j = 0; j < 4; i++)
+				NodeL* adj = currNode->adj[j];
+				if (adj->cost == UINT64_MAX || adj->cost > currNode->cost + 1 + DistanceNodesL(adj, list.at(list.size() - 1)))
 				{
-					if (list.at(i)->adj[j] != 0 && currNode == list.at(i))// &graph->nodes[currNode->index])
+					adj->cost = currNode->cost + 1 + DistanceNodesL(adj, list.at(list.size() - 1));
+					adj->revPath = currNodeIdx;
+
+					if (adj->visited == 0)
 					{
-						if ((list.at(i)->adj[j]->visited != 1 && list.at(i)->adj[j]->cost == UINT64_MAX) || (list.at(j)->cost > list.at(i)->cost + list.at(i)->adj[j]->cost))
-						{
-							list.at(i)->adj[j]->cost = currNode->cost + list.at(i)->adj[j]->cost + DistanceNodesL(list.at(i), list.back() - 1);
-							list.at(i)->adj[j]->revPath = list.at(i)->index;
-							queue_push(q, list.at(i)->adj[j]);
-						}
+						adj->visited = 1;
+						queue_push(q, adj);
 					}
 				}
 			}
 		}
 		currNode = (NodeL*)queue_pop(q);
 	}
+
 	currNode = list.back() - 1;
 	stack_push(solvedPath, currNode);
 	while (currNode != list.at(0))
 	{
-		currNode = currNode->revPath;
+		currNode = list.at(currNode->revPath);
 		stack_push(solvedPath, currNode);
+	}
+}
+
+void MakePathRed(Stack* s)
+{
+	while (s->top != -1)
+	{
+		Node* newNode = (Node*)stack_pop(s);
+		unsigned char* newPixel = (unsigned char*)newNode->data;
+		newPixel[0] = 255;
+		newPixel[1] = 0;
+		newPixel[2] = 0;
 	}
 }

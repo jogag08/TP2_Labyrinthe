@@ -151,14 +151,17 @@ int main(int argc, char** argv) {
 	std::vector<NodeL*> pixelList;
 	Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
 	int k = 0;
+	int vecIdx = -1;
 	for (unsigned char* i = img; i < img + imgSize; i += 3)
 	{
 		if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))	
 		{
+			vecIdx++;
 			pos->x = k % width;
 			pos->y = k / width;
-			NodeL* newNode = create_node(i, pos->x, pos->y);
+			NodeL* newNode = create_node(i, pos->x, pos->y, k);
 			pixelList.emplace_back(newNode);
+			newNode->index = vecIdx;
 			//list->len++;
 			//list->nodes[index] = create_node(i, pos);
 		}
@@ -166,9 +169,9 @@ int main(int argc, char** argv) {
 	}
 
 	int node = 0;
-	for (unsigned int i = 0; i <= pixelList.size() - 1; i++)
+	for (unsigned int i = 0; i < pixelList.size() - 1; i++)
 	{
-		for (unsigned int j = 0; j <= pixelList.size() - 1; j++)
+		for (unsigned int j = 0; j < pixelList.size() - 1; j++)
 		{
 			int x1 = pixelList.at(i)->posX;
 			int y1 = pixelList.at(i)->posY;
@@ -189,9 +192,13 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	Stack newStack = stack_init(whitePixelsQty);
+	astarAdjList(pixelList, &newStack);
+	MakePathRed(&newStack);
+
 	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 	
-	stbi_write_bmp("new64.bmp", width, height, channels, img);
+	stbi_write_bmp("new31list.bmp", width, height, channels, img);
 	
 	return 0;
 }
