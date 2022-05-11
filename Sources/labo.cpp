@@ -225,17 +225,11 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 		list.at(i)->visited = 0;
 	}
 
-	//graph->nodes[startNodeIndex].cost = 0;
 	list.at(0)->cost = 0;
 
 	NodeL* currNode = list.at(0);
 	Queue* q = (Queue*)allocate(sizeof(Queue));
 	queue_init(q);
-
-	//for (int i = 0; i < list.size(); i++)
-	//{
-	//	printf("%d", graph->nodes[i].index);
-	//}
 
 	while (currNode != NULL)
 	{
@@ -264,7 +258,7 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 		currNode = (NodeL*)queue_pop(q);
 	}
 
-	currNode = list.back() - 1;
+	currNode = list.at(list.size() - 1);
 	stack_push(solvedPath, currNode);
 	while (currNode != list.at(0))
 	{
@@ -273,11 +267,11 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 	}
 }
 
-void MakePathRed(Stack* s)
+void MakePathRedList(Stack* s)
 {
 	while (s->top != -1)
 	{
-		Node* newNode = (Node*)stack_pop(s);
+		NodeL* newNode = (NodeL*)stack_pop(s);
 		unsigned char* newPixel = (unsigned char*)newNode->data;
 		newPixel[0] = 255;
 		newPixel[1] = 0;

@@ -3,6 +3,8 @@
 #include <string.h>
 #include <time.h>
 #include <vector>
+#include <map>
+#include <string>
 
 #include "labo.h"
 
@@ -84,7 +86,7 @@ int main(int argc, char** argv) {
 	OPTICK_APP("ConsoleApp");
 
 	int width, height, channels, nodesQty, imgSize, whitePixelsQty = 0, blackPixelsQty =0;
-	unsigned char* img = stbi_load("31.bmp", &width, &height, &channels, 0);
+	unsigned char* img = stbi_load("512.bmp", &width, &height, &channels, 0);
 	nodesQty = width * height;
 	imgSize = nodesQty * channels;
 	
@@ -149,56 +151,69 @@ int main(int argc, char** argv) {
 
 	//AdjList* list = create_list(whitePixelsQty);
 	std::vector<NodeL*> pixelList;
+	std::map<std::string, NodeL*> map;
 	Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
 	int k = 0;
-	int vecIdx = -1;
+	int listIdx = -1;
 	for (unsigned char* i = img; i < img + imgSize; i += 3)
 	{
 		if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))	
 		{
-			vecIdx++;
+			listIdx++;
 			pos->x = k % width;
 			pos->y = k / width;
 			NodeL* newNode = create_node(i, pos->x, pos->y, k);
 			pixelList.emplace_back(newNode);
-			newNode->index = vecIdx;
+			std::string cle;
+			cle += std::to_string(pos->x);
+			cle += ",";
+			cle += std::to_string(pos->y);
+			map.emplace(cle, newNode);
+			newNode->index = listIdx;
 			//list->len++;
 			//list->nodes[index] = create_node(i, pos);
 		}
 		k++;
 	}
 
-	int node = 0;
-	for (unsigned int i = 0; i < pixelList.size() - 1; i++)
+	for (unsigned int i = 0; i < pixelList.size(); i++)
 	{
-		for (unsigned int j = 0; j < pixelList.size() - 1; j++)
-		{
-			int x1 = pixelList.at(i)->posX;
-			int y1 = pixelList.at(i)->posY;
-			int x2 = pixelList.at(j)->posX;
-			int y2 = pixelList.at(j)->posY;
+		int x1 = pixelList.at(i)->posX;
+		int y1 = pixelList.at(i)->posY;
 
-			if 
-			(
-				((x2 - x1 == 1) && (y1 == y2))  ||	//voisin gauche
-				((x1 == x2) && (y2 - y1  == 1)) ||	//voisin bas
-				((x2 - x1 == -1) && (y1 == y2)) ||	//voisin droite
-				((x1 == x2) && (y2 - y1 == -1))		//voisin haut
-			)
-			{
-				add_adjacent_node(pixelList.at(i), pixelList.at(j));
-				//printf("NodeIdx : %d  +  %d\n", graph->nodes[i].index, graph->nodes[j].index);
-			}
+		int xVoisinGauche = x1 - 1;
+		int xVoisinDroit = x1 + 1;
+		int yVoisinBas = y1 - 1;
+		int yVoisinHaut = y1 + 1;
+
+		std::string cle;
+		cle += std::to_string(x1);
+		cle += ",";
+		cle += std::to_string(y1);
+
+		if (map.count(cle) == 1)
+		{
+			NodeL* mapNode = map.at(cle);
+			add_adjacent_node(pixelList.at(i), mapNode);
 		}
 	}
 
+	if
+		(
+			((x2 - x1 == 1) && (y1 == y2)) ||	//voisin gauche
+			((x1 == x2) && (y2 - y1 == 1)) ||	//voisin bas
+			((x2 - x1 == -1) && (y1 == y2)) ||	//voisin droite
+			((x1 == x2) && (y2 - y1 == -1))		//voisin haut
+			)
+
+
 	Stack newStack = stack_init(whitePixelsQty);
 	astarAdjList(pixelList, &newStack);
-	MakePathRed(&newStack);
+	MakePathRedList(&newStack);
 
 	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 	
-	stbi_write_bmp("new31list.bmp", width, height, channels, img);
+	stbi_write_bmp("new512list.bmp", width, height, channels, img);
 	
 	return 0;
 }

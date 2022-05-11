@@ -132,3 +132,5 @@ void add_adjacent_node(NodeL* root, NodeL* node);
 void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath);
 
 double DistanceNodesL(NodeL* fromNode, NodeL* toNode);
+
+void MakePathRedList(Stack* s);
