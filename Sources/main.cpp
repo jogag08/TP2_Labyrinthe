@@ -15,6 +15,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#define OPTICK_ENABLE_GPU (0)
+#include "optick.h"
+
 Stack stack_init(size_t max_size) {
 	Stack s;
 	s.max = max_size;
@@ -86,7 +89,7 @@ int main(int argc, char** argv) {
 	OPTICK_APP("ConsoleApp");
 
 	int width, height, channels, nodesQty, imgSize, whitePixelsQty = 0, blackPixelsQty =0;
-	unsigned char* img = stbi_load("512.bmp", &width, &height, &channels, 0);
+	unsigned char* img = stbi_load("31.bmp", &width, &height, &channels, 0);
 	nodesQty = width * height;
 	imgSize = nodesQty * channels;
 	
@@ -96,7 +99,8 @@ int main(int argc, char** argv) {
 		printf("Error in loading the image\n");
 		exit(1);
 	}
-
+	
+	//Trouver le nombre de pixels blanc
 	for (unsigned char* i = img; i < img + imgSize; i +=3)
 	{
 		if ((i[0] > 100) && (i[1] > 100) && (i[2] > 100))
@@ -104,116 +108,107 @@ int main(int argc, char** argv) {
 			whitePixelsQty++;
 		}
 	}
+	///////////////////////////////////////////////////////////////////////
+	//METTRE LA VALEUR DE adj A 1 POUR MATRICE ET 2 POUR LISTE
+	int adj = 1;
+	///////////////////////////////////////////////////////////////////////
 
-	//AdjMatrix* graph = create_graph(whitePixelsQty);
-	//Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
-	//uint64_t index = 0;
-	//int k = 0;
-	//
-	//for (unsigned char* i = img; i < img + imgSize; i += 3)
-	//{
-	//	if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))	
-	//	{
-	//		pos->x = k % width;
-	//		pos->y = k / width;
-	//		add_node(graph, i, *pos, index);
-	//		index++;
-	//	}
-	//	k++;
-	//}
-	//int node = 0;
-	//for (unsigned int i = 0; i <= graph->len; i++)
-	//{
-	//	for (unsigned int j = 0; j <= graph->len; j++)
-	//	{
-	//		int x1 = graph->nodes[i].position.x;
-	//		int y1 = graph->nodes[i].position.y;
-	//		int x2 = graph->nodes[j].position.x;
-	//		int y2 = graph->nodes[j].position.y;
-	//
-	//		if 
-	//		(
-	//			((x2 - x1 == 1) && (y1 == y2)) ||	//voisin gauche
-	//			((x1 == x2) && (y2 - y1  == 1)) ||	//voisin bas
-	//			((x2 - x1 == -1) && (y1 == y2)) ||	//voisin droite
-	//			((x1 == x2) && (y2 - y1 == -1))		//voisin haut
-	//		)
-	//		{
-	//			add_edge(graph, i, j, 1);
-	//			printf("NodeIdx : %d  +  %d\n", graph->nodes[i].index, graph->nodes[j].index);
-	//		}
-	//	}
-	//}
-	//
-	//Stack newStack = stack_init(whitePixelsQty);
-	//astarAdjMatrix(graph, 0, newStack.max, &newStack);
-	//MakePathRed(&newStack);
-
-	//AdjList* list = create_list(whitePixelsQty);
-	std::vector<NodeL*> pixelList;
-	std::map<std::string, NodeL*> map;
-	Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
-	int k = 0;
-	int listIdx = -1;
-	for (unsigned char* i = img; i < img + imgSize; i += 3)
+	//Trouver le chemin avec la matrice d'adjacence
+	if (adj == 1)
 	{
-		if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))	
-		{
-			listIdx++;
-			pos->x = k % width;
-			pos->y = k / width;
-			NodeL* newNode = create_node(i, pos->x, pos->y, k);
-			pixelList.emplace_back(newNode);
-			std::string cle;
-			cle += std::to_string(pos->x);
-			cle += ",";
-			cle += std::to_string(pos->y);
-			map.emplace(cle, newNode);
-			newNode->index = listIdx;
-			//list->len++;
-			//list->nodes[index] = create_node(i, pos);
-		}
-		k++;
-	}
+		AdjMatrix* graph = create_graph(whitePixelsQty);
+		Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
+		uint64_t index = 0;
+		int k = 0;
 
-	for (unsigned int i = 0; i < pixelList.size(); i++)
+		//Boucle servant à attribuer des positions aux nodes et les ajouter au graph
+		for (unsigned char* i = img; i < img + imgSize; i += 3)
+		{
+			if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))
+			{
+				pos->x = k % width;
+				pos->y = k / width;
+				add_node(graph, i, *pos, index);
+				index++;
+			}
+			k++;
+		}
+		
+		//Boucle pour ajouter les edges aux nodes
+		for (unsigned int i = 0; i <= graph->len; i++)
+		{
+			for (unsigned int j = 0; j <= graph->len; j++)
+			{
+				int x1 = graph->nodes[i].position.x;
+				int y1 = graph->nodes[i].position.y;
+				int x2 = graph->nodes[j].position.x;
+				int y2 = graph->nodes[j].position.y;
+
+				if
+					(((x2 - x1 == 1) && (y1 == y2)) ||	//voisin gauche
+					((x1 == x2) && (y2 - y1 == 1)) ||	//voisin bas
+					((x2 - x1 == -1) && (y1 == y2)) ||	//voisin droite
+					((x1 == x2) && (y2 - y1 == -1)))	//voisin haut
+				{
+					add_edge(graph, i, j, 1);
+				}
+			}
+		}
+
+		Stack newStack = stack_init(whitePixelsQty);
+		astarAdjMatrix(graph, 0, newStack.max, &newStack);
+		MakePathRed(&newStack);
+
+		printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
+
+		stbi_write_bmp("new31Matrix.bmp", width, height, channels, img);
+	}
+	
+	////////////////////////////////////////////////////////////////////////////
+	else if (adj == 2)
 	{
-		int x1 = pixelList.at(i)->posX;
-		int y1 = pixelList.at(i)->posY;
+		std::vector<NodeL*> pixelList;
+		std::map<std::string, NodeL*> map;
+		Vector2* pos = (Vector2*)allocate(sizeof(Vector2));
+		int k = 0;
+		int listIdx = -1;
 
-		int xVoisinGauche = x1 - 1;
-		int xVoisinDroit = x1 + 1;
-		int yVoisinBas = y1 - 1;
-		int yVoisinHaut = y1 + 1;
-
-		std::string cle;
-		cle += std::to_string(x1);
-		cle += ",";
-		cle += std::to_string(y1);
-
-		if (map.count(cle) == 1)
+		//Construction d'un vecteur composé des nodes et attribuer à ces nodes une clé pour ensuite les mettres dans une map pour pouvoir les retrouver plus tard
+		for (unsigned char* i = img; i < img + imgSize; i += 3)
 		{
-			NodeL* mapNode = map.at(cle);
-			add_adjacent_node(pixelList.at(i), mapNode);
+			if ((i[0] > 150) && (i[1] > 150) && (i[2] > 150))
+			{
+				listIdx++;
+				pos->x = k % width;
+				pos->y = k / width;
+				NodeL* newNode = create_node(i, pos->x, pos->y, k);
+				pixelList.emplace_back(newNode);
+				std::string cle;
+				cle += std::to_string(pos->x);
+				cle += ",";
+				cle += std::to_string(pos->y);
+				map.emplace(cle, newNode);
+				newNode->index = listIdx;
+			}
+			k++;
 		}
+
+		//Trouver les voisins de chaques nodes
+		for (unsigned int i = 0; i < pixelList.size(); i++)
+		{
+			int x = pixelList.at(i)->posX;
+			int y = pixelList.at(i)->posY;
+
+			CheckKey(pixelList.at(i), x, y, &map);
+		}
+
+		Stack newStack = stack_init(whitePixelsQty);
+		astarAdjList(pixelList, &newStack);
+		MakePathRedList(&newStack);
+
+		printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
+
+		stbi_write_bmp("newperfect2kList.bmp", width, height, channels, img);
 	}
-
-	if
-		(
-			((x2 - x1 == 1) && (y1 == y2)) ||	//voisin gauche
-			((x1 == x2) && (y2 - y1 == 1)) ||	//voisin bas
-			((x2 - x1 == -1) && (y1 == y2)) ||	//voisin droite
-			((x1 == x2) && (y2 - y1 == -1))		//voisin haut
-			)
-
-
-	Stack newStack = stack_init(whitePixelsQty);
-	astarAdjList(pixelList, &newStack);
-	MakePathRedList(&newStack);
-
-	printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
-	
-	stbi_write_bmp("new512list.bmp", width, height, channels, img);
-	
 	return 0;
 }

@@ -1,6 +1,9 @@
 ﻿#include <stdint.h>
 #include <assert.h>
 #include <vector>
+#include <string>
+#include <map>
+#include "optick.h"
 
 void* allocate(size_t size);
 
@@ -83,6 +86,7 @@ void build_groups(AdjMatrix* graph);
 void astarAdjMatrix(AdjMatrix* graph,int startNodeIndex, int endNodeIndex, Stack* solvedPath);
 
 double DistanceNodes(Node* fromNode, Node* toNode);
+
 void MakePathRed(Stack* s);
 
 
@@ -92,10 +96,6 @@ void MakePathRed(Stack* s);
 struct NodeL{
 	void* data;
 	int index;
-	int r;
-	int g;
-	int b;
-	//Vector2 pos;
 	int posX;
 	int posY;
 	NodeL* adj[4];
@@ -104,16 +104,6 @@ struct NodeL{
 	uint64_t cost;
 	uint8_t visited;
 	uint64_t revPath;
-
-//	//uint64_t cost;
-//	//Vector2 position;
-//	//uint8_t graph_group;
-//	//unsigned char r;
-//	//unsigned char g;
-//	//unsigned char b;
-//	//uint64_t path_from;
-//	//uint64_t index;
-//	//uint8_t visited;
 };
 
 typedef struct AdjList AdjList;
@@ -134,3 +124,5 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath);
 double DistanceNodesL(NodeL* fromNode, NodeL* toNode);
 
 void MakePathRedList(Stack* s);
+
+void CheckKey(NodeL* currNode, int currX, int currY, std::map<std::string, NodeL*> *map);

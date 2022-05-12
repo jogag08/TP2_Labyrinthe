@@ -2,8 +2,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <vector>
 AdjMatrix* create_graph(size_t max_nodes) {
 	AdjMatrix* graph = (AdjMatrix*)allocate(sizeof(AdjMatrix));
 	graph->len = 0;
@@ -84,11 +82,8 @@ void build_groups(AdjMatrix* graph)
 
 void astarAdjMatrix(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stack* solvedPath)
 {
-	//if (graph->nodes[startNodeIndex].graph_group != graph->nodes[endNodeIndex].graph_group)
-	//{
-	//	return;
-	//}
-
+	OPTICK_EVENT("astarAdjMatrix");
+	
 	//Vider la stack si elle n'est pas vide
 	while (solvedPath->top != -1)
 	{
@@ -106,27 +101,19 @@ void astarAdjMatrix(AdjMatrix* graph, int startNodeIndex, int endNodeIndex, Stac
 	Queue* q = (Queue*)allocate(sizeof(Queue));
 	queue_init(q);
 
-	for (int i = 0; i < graph->len; i++)
-	{
-		printf("%d", graph->nodes[i].index);
-	}
-
 	while (currNode != NULL)
 	{
 		currNode->visited = 1;
 
-		//for (int i = 0; i < graph->len; i++)
+		for (int j = 0; j < graph->len; j++)
 		{
-			for (int j = 0; j < graph->len; j++)
+			if (graph->adjGraph[currNode->index][j] != 0 && currNode == &graph->nodes[currNode->index])
 			{
-				if (graph->adjGraph[currNode->index][j] != 0 && currNode == &graph->nodes[currNode->index])
+				if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT64_MAX)  || (graph->nodes[j].cost > graph->nodes[currNode->index].cost + graph->adjGraph[currNode->index][j]))
 				{
-					if ((graph->nodes[j].visited != 1 && graph->nodes[j].cost == UINT64_MAX)  || (graph->nodes[j].cost > graph->nodes[currNode->index].cost + graph->adjGraph[currNode->index][j]))
-					{
-						graph->nodes[j].cost = currNode->cost + graph->adjGraph[currNode->index][j] + DistanceNodes(&graph->nodes[j], &graph->nodes[endNodeIndex - 1]);
-						graph->nodes[j].path_from = graph->nodes[currNode->index].index;
-						queue_push(q, &graph->nodes[j]);
-					}
+					graph->nodes[j].cost = currNode->cost + graph->adjGraph[currNode->index][j] + DistanceNodes(&graph->nodes[j], &graph->nodes[endNodeIndex - 1]);
+					graph->nodes[j].path_from = graph->nodes[currNode->index].index;
+					queue_push(q, &graph->nodes[j]);
 				}
 			}
 		}
@@ -162,6 +149,8 @@ void MakePathRed(Stack* s)
 	}
 }
 
+
+
 //Liste adjacence
 
 AdjList* create_list(size_t max_nodes)
@@ -177,8 +166,6 @@ NodeL* create_node(void* data, int x, int y, int idx)
 {
 	NodeL* newNode = (NodeL*)allocate(sizeof(NodeL));
 	newNode->data = data;
-	//Vector2* pos = position;
-	//memset(newNode->adj, 0, sizeof(QNode));
 	newNode->visited = 0;
 	newNode->len = 0;
 	newNode->revPath = UINT64_MAX;
@@ -209,17 +196,15 @@ double DistanceNodesL(NodeL* fromNode, NodeL* toNode)
 
 void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 {
-	//if (graph->nodes[startNodeIndex].graph_group != graph->nodes[endNodeIndex].graph_group)
-	//{
-	//	return;
-	//}
-
+	OPTICK_EVENT("astarAdjList");
+	
 	//Vider la stack si elle n'est pas vide
 	while (solvedPath->top != -1)
 	{
 		stack_pop(solvedPath);
 	}
 
+	//S'assurer que tous les nodes.visited sont à 0
 	for (int i = 0; i < list.size() - 1; i++)
 	{
 		list.at(i)->visited = 0;
@@ -237,21 +222,18 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 
 		int currNodeIdx = currNode->index;
 
-		//for (int i = 0; i < graph->len; i++)
+		for (int j = 0; j < currNode->len; j++)
 		{
-			for (int j = 0; j < currNode->len; j++)
+			NodeL* adjacent = currNode->adj[j];
+			if (adjacent->cost == UINT64_MAX || adjacent->cost > currNode->cost + 1 + DistanceNodesL(adjacent, list.at(list.size() - 1)))
 			{
-				NodeL* adj = currNode->adj[j];
-				if (adj->cost == UINT64_MAX || adj->cost > currNode->cost + 1 + DistanceNodesL(adj, list.at(list.size() - 1)))
-				{
-					adj->cost = currNode->cost + 1 + DistanceNodesL(adj, list.at(list.size() - 1));
-					adj->revPath = currNodeIdx;
+				adjacent->cost = currNode->cost + 1 + DistanceNodesL(adjacent, list.at(list.size() - 1));
+				adjacent->revPath = currNodeIdx;
 
-					if (adj->visited == 0)
-					{
-						adj->visited = 1;
-						queue_push(q, adj);
-					}
+				if (adjacent->visited == 0)
+				{
+					adjacent->visited = 1;
+					queue_push(q, adjacent);
 				}
 			}
 		}
@@ -276,5 +258,52 @@ void MakePathRedList(Stack* s)
 		newPixel[0] = 255;
 		newPixel[1] = 0;
 		newPixel[2] = 0;
+	}
+}
+
+void CheckKey(NodeL* currNode, int currX, int currY, std::map<std::string, NodeL*> *map)
+{
+	//Initialisation de chaque clé qui vont prendre comme valeurs les positions de chaque côté du node courant pour savoir si elles existent dans la map, si elles existent, on ajoute un voisin
+	std::string cle1, cle2, cle3, cle4;
+	int yHaut = currY - 1;
+	int yBas = currY + 1;
+	int xGauche = currX - 1;
+	int xDroite = currX + 1;
+	
+	cle1 += std::to_string(currX); //x
+	cle1 += ",";
+	cle1 += std::to_string(yHaut); //y
+	
+	cle2 += std::to_string(currX); //x
+	cle2 += ",";
+	cle2 += std::to_string(yBas); //y
+	
+	cle3 += std::to_string(xGauche); //x
+	cle3 += ",";
+	cle3 += std::to_string(currY); //y
+	
+	cle4 += std::to_string(xDroite); //x
+	cle4 += ",";
+	cle4 += std::to_string(currY); //y
+
+	if (map->count(cle1) == 1)
+	{
+		NodeL* mapNode = map->at(cle1);
+		add_adjacent_node(currNode, mapNode);
+	}
+	if (map->count(cle2) == 1)
+	{
+		NodeL* mapNode = map->at(cle2);
+		add_adjacent_node(currNode, mapNode);
+	}
+	if (map->count(cle3) == 1)
+	{
+		NodeL* mapNode = map->at(cle3);
+		add_adjacent_node(currNode, mapNode);
+	}
+	if (map->count(cle4) == 1)
+	{
+		NodeL* mapNode = map->at(cle4);
+		add_adjacent_node(currNode, mapNode);
 	}
 }
