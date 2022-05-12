@@ -1,0 +1,16 @@
+Mes deux fonctions Astar sont dans le même programme mais ils ne fonctionnent pas les deux en mêmes temps à l'éxécution.
+J'ai mis une variable nommée "adj" avec les instructions en commentaires juste au dessus. Il suffit de donner à cette variable la valeur "1"
+pour lancer le programme avec la matrice d'adjacence et "2" pour lancer le programme avec la liste d'adjacence.
+
+Dans le dossier "TP2_Labyrinte" se trouve un dossier "ResultatsOptick" dans lequel j'ai mis mes résultats de profiling.
+
+
+
+Hypothèse sur la structure la plus performante :
+
+Matrix: 347ms
+List : 9ms
+
+Le astar pour la liste d'adjacence est beaucoup plus performante puisque selon Optick, il est capable de donner un résultat en
+seulement 9ms tandis que le astar pour la matrice d'adjacence en donne un en 347ms. Selon moi, puisque le astar de la liste fonctionne
+avec une map, le programme va à une vitesse en O(1). Par contre la matrice d'adjacence fonctionne en O(n).

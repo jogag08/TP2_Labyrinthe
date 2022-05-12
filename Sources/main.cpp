@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
 	OPTICK_APP("ConsoleApp");
 
 	int width, height, channels, nodesQty, imgSize, whitePixelsQty = 0, blackPixelsQty =0;
-	unsigned char* img = stbi_load("31.bmp", &width, &height, &channels, 0);
+	unsigned char* img = stbi_load("128.bmp", &width, &height, &channels, 0);
 	nodesQty = width * height;
 	imgSize = nodesQty * channels;
 	
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
 
 		printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 
-		stbi_write_bmp("new31Matrix.bmp", width, height, channels, img);
+		stbi_write_bmp("new128Matrix.bmp", width, height, channels, img);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 
 		printf("Loaded image with a width of %dpx, a height of %dpx and %d channels Nodes : %d\n", width, height, channels, nodesQty);
 
-		stbi_write_bmp("newperfect2kList.bmp", width, height, channels, img);
+		stbi_write_bmp("new128List.bmp", width, height, channels, img);
 	}
 	return 0;
 }

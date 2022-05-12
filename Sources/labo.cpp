@@ -139,6 +139,8 @@ double DistanceNodes(Node* fromNode, Node* toNode)
 
 void MakePathRed(Stack* s)
 {
+	OPTICK_EVENT("MakePathRed");
+	
 	while (s->top != -1)
 	{
 		Node* newNode = (Node*)stack_pop(s);
@@ -187,6 +189,8 @@ void add_adjacent_node(NodeL* root, NodeL* node)
 
 double DistanceNodesL(NodeL* fromNode, NodeL* toNode)
 {
+	OPTICK_EVENT("DistanceNodesL");
+	
 	double base = fabs(fromNode->posX - toNode->posX);
 	double hauteur = fabs(fromNode->posY - toNode->posY);
 	double hypo = sqrt((pow(base, 2) + pow(hauteur, 2)));
@@ -251,6 +255,7 @@ void astarAdjList(std::vector<NodeL*> list, Stack* solvedPath)
 
 void MakePathRedList(Stack* s)
 {
+	OPTICK_EVENT("MakePathRedList");
 	while (s->top != -1)
 	{
 		NodeL* newNode = (NodeL*)stack_pop(s);
